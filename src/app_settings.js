@@ -1,0 +1,1 @@
+export const baseUrl = "https://info3103.cs.unb.ca:8002";

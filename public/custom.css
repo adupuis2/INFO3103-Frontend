@@ -1,0 +1,22 @@
+.margin-bottom-1em {
+    margin-bottom: 1em;
+}
+
+.margin-bottom-05em {
+    margin-bottom: 0.5em;
+}
+
+.space-btwn {
+    display: flex;
+    justify-content: space-between;
+}
+
+.space-around {
+    display: flex;
+    align-content: space-around;
+}
+
+.grid-basic {
+    display: grid;
+    width: 100%;
+}

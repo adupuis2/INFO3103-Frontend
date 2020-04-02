@@ -1,1 +1,0 @@
-export const api = "https://info3103.cs.unb.ca:8002";

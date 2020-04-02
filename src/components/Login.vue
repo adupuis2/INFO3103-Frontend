@@ -1,26 +1,22 @@
 <template>
     <div>
         <div class="form-group text-center">
-            <input class="col-4 mx-auto form-control" type="text" name="username" v-model="input.username"
+            <input class="col-4 mx-auto form-control margin-bottom-05em" type="text" name="username" v-model="input.username"
                    placeholder="Username"/>
-            <input class="col-4 mx-auto form-control" type="password" name="password" v-model="input.password"
+            <input class="col-4 mx-auto form-control margin-bottom-05em" type="password" name="password" v-model="input.password"
                    placeholder="Password"/>
-            <button class="col-4 btn btn-outline-success" type="button" v-on:click="login()">Login</button>
-        </div>
-        <div class="text-center">
-            <button type="button" class="btn btn-outline-danger" v-on:click="logout()">Logout</button>
-            <button type="button" class="btn btn-outline-primary" v-on:click="fetchSchools()">List schools</button>
+            <button @click="login()" class="col-4 btn btn-outline-success" type="button">Login</button>
         </div>
     </div>
 </template>
 
 <script>
-    import axios from "axios";
-    import { api } from "../options";
+    import { loginController } from "../api/endpointInterfaces";
 
     export default {
         data() {
             return {
+                status: null,
                 input: {
                     username: '',
                     password: ''
@@ -29,22 +25,14 @@
         },
         name: "Login",
         methods: {
-            login: function () {
-                axios.defaults.withCredentials = true;
-                const url = api + '/login';
-                axios
-                    .post(url, {
-                        username: this.input.username,
-                        password: this.input.password
-                    })
-                    .then((res) => console.log(res.status));
-            },
-            logout: () => {
-                axios.defaults.withCredentials = true;
-                axios.get(api + '/login').then(res => console.log(res));
-            },
-            fetchSchools: () => {
-            },
+            login: async function () {
+                const response = await loginController.post(this.input.username, this.input.password);
+                if(response.status === 201) {
+                    this.$emit('login');
+                }
+                // todo: invalid credentials
+                // todo: bad request
+            }
         }
     }
 </script>
