@@ -14,7 +14,6 @@ async function formatResponse(axiosCall) {
             data: response.data
         }
     }).catch(error => {
-        console.log(error);
         return {
             status: error.response.status,
             data: error.response.data
@@ -58,6 +57,9 @@ export const fileManagerController = {
         document.body.appendChild(link);
         link.click();
         link.remove();
+    },
+    head: async function (userIdentifier, fileId) {
+        return await axios.head(fileManagerEndpoint(userIdentifier, fileId));
     },
     put: async function (userIdentifier, fileId, newfileName) {
         return await formatResponse(axios.put(fileManagerEndpoint(userIdentifier, fileId, newfileName), {name: newfileName}))

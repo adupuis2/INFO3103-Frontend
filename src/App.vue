@@ -6,7 +6,7 @@
         <!-- credit: https://serversideup.net/uploading-files-vuejs-axios/ -->
         <div class="text-center">
             <div v-cloak v-if="loggedIn === true">
-                Use the Browse button to select files to upload <br/>
+                Use the browse button to select files to upload <br/>
                 or just drag them here! <br />
                 <label>
                     <input type="file" id="files" ref="files" class="col-form-label" multiple/>
@@ -14,6 +14,7 @@
                 <button @click="addFileByForm" class="btn btn-outline-success">Upload</button>
             </div>
         </div>
+
         <FileList v-cloak v-if="loggedIn === true" :user="username" :user-files="userFiles" :last-update="lastUpdate" @refresh="refresh"/>
     </div>
 </template>
@@ -30,7 +31,6 @@
                 loggedIn: null,
                 username: '',
                 userFiles: [],
-                lastUpdate: 0,
             };
         },
         async mounted() {

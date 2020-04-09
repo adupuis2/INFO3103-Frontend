@@ -1,12 +1,12 @@
 <template>
     <div class="margin-bottom-1em col-xs-12 col-md-6 col-lg-4 col-xl-3">
-        <div class="card height">
+        <div class="card height100">
             <div class="card-header">
                 <input
                         v-if="editing"
                         v-model="fileDetails.name"
-                        @blur="saveEdit"
-                        @keyup.enter="saveEdit"
+                        @blur="renameFile"
+                        @keyup.enter="renameFile"
                         v-focus
                 >
                 <span v-else>
@@ -14,6 +14,14 @@
                 </span>
             </div>
             <div class="card-body">
+                <div class="info-message">
+                    <span v-if="message.error === true" class="text-danger">
+                        {{message.body}}
+                    </span>
+                    <span v-if="message.error === false" class="text-success disappearing">
+                        {{ message.body}}
+                    </span>
+                </div>
                 <table>
                     <tr>
                         <td class="text-light pad-right">Size</td>
@@ -66,6 +74,8 @@
 </template>
 
 <script>
+    import { fileManagerController } from "../api/endpointInterfaces";
+
     export default {
         data() {
             return {
@@ -75,7 +85,12 @@
                     lastModified: null,
                     size: null
                 },
-                editing: false
+                editing: false,
+                nameBackup: null,
+                message: {
+                    error: null,
+                    body: null
+                }
             }
         },
         mounted() {
@@ -83,21 +98,62 @@
         },
         name: "File",
         methods: {
-            saveEdit: async function () {
+            renameFile: async function () {
                 this.editing = false;
-                this.$emit('saveEdit', {id: this.fileDetails.id, newName: this.fileDetails.name});
+                const result = await fileManagerController.put(this.$props.user, this.fileDetails.id, this.fileDetails.name);
+                if (result.status === 200)
+                    this.saveSuccess();
+                else
+                    this.saveFailure(result);
+            },
+            saveSuccess: async function () {
+                const newMetaData = await fileManagerController.head(this.$props.user, this.fileDetails.id);
+                this.fileDetails.lastModified = new Date(newMetaData.headers["last-modified"]).toLocaleString();
+                this.nameBackup = this.fileDetails.name;
+                this.message = {
+                    error: false,
+                    body: 'File successfully renamed'
+                };
+                await new Promise(r => setTimeout(r, 2000));
+                this.message = {
+                    error: null,
+                    body: null
+                }
+            },
+            saveFailure: function (result) {
+                this.fileDetails.name = this.nameBackup;
+                let body = '';
+                switch(result.status){
+                    case 400:
+                        body = 'Bad request';
+                        break;
+                    case 403:
+                        body = 'Permission denied';
+                        break;
+                    case 404:
+                        body = 'File not found...?';
+                        break;
+                    case 409:
+                        body = 'File name already in use' ;
+                        break;
+                }
+                this.message = {
+                    error: true,
+                    body
+                }
             },
             applyData: function (newVal) {
                 const fileDetails = {
                     id: newVal.id,
                     name: newVal.name,
-                    lastModified: newVal.last_modified,
+                    lastModified: new Date(newVal.last_modified).toLocaleString(),
                     size: newVal.size
                 };
                 this.fileDetails = fileDetails;
+                this.nameBackup = newVal.name;
             }
         },
-        props: ['fileProp', 'user', 'lastUpdate'],
+        props: ['fileProp', 'user'],
         watch: {
             fileProp(newVal) {
                 this.applyData(newVal);
@@ -114,7 +170,19 @@
 </script>
 
 <style scoped>
-    .height {
+    .height100 {
         height: 100%;
+    }
+    .disappearing {
+        animation: disappear 2s ease-in;
+    }
+
+    @keyframes disappear {
+        0% {
+            opacity: 100%;
+        }
+        100% {
+            opacity: 0%;
+        }
     }
 </style>

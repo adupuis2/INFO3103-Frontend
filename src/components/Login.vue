@@ -2,7 +2,7 @@
     <div>
         <div class="form-group text-center">
             <div class="info-message">
-                <div v-if="status !== null" class="badge-danger">
+                <div v-if="status !== null" class="text-danger">
                     Login failed –
                     <span v-if="status === 400">Bad request</span>
                     <span v-if="status === 401">Invalid credentials</span>
