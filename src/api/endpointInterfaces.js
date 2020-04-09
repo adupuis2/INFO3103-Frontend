@@ -3,7 +3,7 @@ import { baseUrl } from "../app_settings";
 
 const loginEndpoint = `${baseUrl}/login`;
 const fileCollectionEndpoint = (userIdentifier) => `${baseUrl}/users/${userIdentifier}/files`;
-const fileManagerEndpoint = (userIdentifier, fileId) => `${fileCollectionEndpoint(userIdentifier)}/${fileId}`;
+const fileManagerEndpoint = (userIdentifier, fileId, fileName) => `${fileCollectionEndpoint(userIdentifier)}/${fileId}/${fileName}`;
 
 axios.defaults.withCredentials = true;
 
@@ -14,6 +14,7 @@ async function formatResponse(axiosCall) {
             data: response.data
         }
     }).catch(error => {
+        console.log(error);
         return {
             status: error.response.status,
             data: error.response.data
@@ -50,7 +51,15 @@ export const fileManagerController = {
     delete: async function (userIdentifier, fileId) {
         return await formatResponse(axios.delete(fileManagerEndpoint(userIdentifier, fileId)));
     },
-    get: async function (userIdentifier, fileId) {
-        return await formatResponse(axios.get(fileManagerEndpoint(userIdentifier, fileId)));
+    get: function (userIdentifier, fileId, fileName) {
+        const url = fileManagerEndpoint(userIdentifier, fileId, fileName);
+        const link = document.createElement('a');
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    },
+    put: async function (userIdentifier, fileId, newfileName) {
+        return await formatResponse(axios.put(fileManagerEndpoint(userIdentifier, fileId, newfileName), {name: newfileName}))
     }
 };

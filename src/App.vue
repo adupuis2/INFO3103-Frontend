@@ -1,8 +1,20 @@
 <template>
-    <div class="max-height" id="app" @drop="addFile" @drop.prevent @dragover.prevent>
+    <div class="container full-width" id="app" @drop.prevent="addFileByDrop" @dragover.prevent>
         <Header :loggedIn="loggedIn" @logout="getLoggedIn"/>
         <Login v-cloak v-if="loggedIn === false" @login="getLoggedIn"/>
-        <FileList v-cloak v-if="loggedIn === true" :user="username" :userFiles="userFiles" @refresh="refresh"/>
+
+        <!-- credit: https://serversideup.net/uploading-files-vuejs-axios/ -->
+        <div class="text-center">
+            <div v-cloak v-if="loggedIn === true">
+                Use the Browse button to select files to upload <br/>
+                or just drag them here! <br />
+                <label>
+                    <input type="file" id="files" ref="files" class="col-form-label" multiple/>
+                </label>
+                <button @click="addFileByForm" class="btn btn-outline-success">Upload</button>
+            </div>
+        </div>
+        <FileList v-cloak v-if="loggedIn === true" :user="username" :user-files="userFiles" :last-update="lastUpdate" @refresh="refresh"/>
     </div>
 </template>
 
@@ -17,7 +29,8 @@
             return {
                 loggedIn: null,
                 username: '',
-                userFiles: []
+                userFiles: [],
+                lastUpdate: 0,
             };
         },
         async mounted() {
@@ -32,19 +45,28 @@
                 else {
                     this.loggedIn = true;
                     this.username = response.data.username;
-                    this.userFiles = await fileCollectionController.get(this.username);
+                    this.getFiles();
                 }
             },
-            async addFile(e) {
+            async getFiles(){
+                const files = await fileCollectionController.get(this.username);
+                this.userFiles = files.data.items;
+            },
+            async addFileByForm() {
+                await this.addFile(this.$refs.files.files);
+            },
+            async addFileByDrop(e) {
+                await this.addFile(e.dataTransfer.files);
+            },
+            async addFile(files) {
                 let formData = new FormData();
-                const files = e.dataTransfer.files;
                 for (let i = 0; i < files.length; i++)
                     formData.append('file' + i, files[i]);
-
                 await fileCollectionController.post(this.username, formData);
+                this.getFiles();
             },
-            async refresh(){
-                this.userFiles = await fileCollectionController.get(this.username);
+            async refresh() {
+                this.getFiles();
             }
         },
         name: "app",
@@ -53,12 +75,4 @@
 </script>
 
 <style>
-    .max-height {
-        height: 100%;
-    }
-
-    button {
-        background: #009435;
-        border: 1px solid #009435;
-    }
 </style>

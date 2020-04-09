@@ -1,8 +1,17 @@
 <template>
-    <div class="margin-bottom-1em col-xs-12 col-md-6">
-        <div class="card">
+    <div class="margin-bottom-1em col-xs-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card height">
             <div class="card-header">
-                {{fileDetails.name}}
+                <input
+                        v-if="editing"
+                        v-model="fileDetails.name"
+                        @blur="saveEdit"
+                        @keyup.enter="saveEdit"
+                        v-focus
+                >
+                <span v-else>
+                    <strong>{{fileDetails.name}}</strong>
+                </span>
             </div>
             <div class="card-body">
                 <table>
@@ -17,6 +26,7 @@
                 </table>
             </div>
             <div class="card-footer space-btwn">
+                <!-- These svg icons were pulled from Bootstrap Icons https://icons.getbootstrap.com/ -->
                 <button class="col-3 btn btn-outline-success" @click.prevent="$emit('download')">
                     <svg class="bi bi-download" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor"
                          xmlns="http://www.w3.org/2000/svg">
@@ -39,7 +49,7 @@
                               clip-rule="evenodd"/>
                     </svg>
                 </button>
-                <button class="col-3 btn btn-outline-info">
+                <button class="col-3 btn btn-outline-info" @click.prevent="editing = true">
                     <svg class="bi bi-pencil" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor"
                          xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd"
@@ -64,24 +74,47 @@
                     name: null,
                     lastModified: null,
                     size: null
-                }
+                },
+                editing: false
             }
         },
-        props: ['id', 'name', 'lastModified', 'size'],
-        name: "File",
         mounted() {
-            this.fileDetails = {
-                id: this.$props.id,
-                name: this.$props.name,
-                lastModified: this.$props.lastModified,
-                size: this.$props.size
+            this.applyData(this.$props.fileProp);
+        },
+        name: "File",
+        methods: {
+            saveEdit: async function () {
+                this.editing = false;
+                this.$emit('saveEdit', {id: this.fileDetails.id, newName: this.fileDetails.name});
+            },
+            applyData: function (newVal) {
+                const fileDetails = {
+                    id: newVal.id,
+                    name: newVal.name,
+                    lastModified: newVal.last_modified,
+                    size: newVal.size
+                };
+                this.fileDetails = fileDetails;
+            }
+        },
+        props: ['fileProp', 'user', 'lastUpdate'],
+        watch: {
+            fileProp(newVal) {
+                this.applyData(newVal);
+            }
+        },
+        directives: {
+            focus: {
+                inserted(el) {
+                    el.focus()
+                }
             }
         }
     }
 </script>
 
 <style scoped>
-    .pad-right {
-        padding-right: 1em;
+    .height {
+        height: 100%;
     }
 </style>

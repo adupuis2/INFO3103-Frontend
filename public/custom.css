@@ -20,3 +20,18 @@
     display: grid;
     width: 100%;
 }
+
+.pad-right {
+    padding-right: 1em;
+}
+
+.full-width {
+    max-width: 100%;
+    width: 100vw;
+    margin-right: 0;
+    margin-left: 0;
+}
+
+.info-message {
+    height: 2em;
+}
